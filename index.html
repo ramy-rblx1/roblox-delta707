@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>نفذ الشروط</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+
+<style>
+/* --- نفس التنسيقات السابقة تماماً --- */
+* { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  font-family: 'Cairo', 'Tahoma', sans-serif;
+  background: radial-gradient(circle at center, #330000, #0f2e0f, #000000);
+  color: #fffaf0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 20px 0;
+  position: relative;
+}
+
+.snow-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: -1; overflow: hidden;
+}
+.snow {
+    position: absolute; width: 10px; height: 10px; background: white;
+    border-radius: 50%; opacity: 0.8; animation: snowfall linear infinite;
+}
+@keyframes snowfall {
+    0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
+    100% { transform: translateY(110vh) translateX(20px); opacity: 0.3; }
+}
+
+.page-container {
+  width: 95%; max-width: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 25px; padding: 30px 25px;
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.2);
+  position: relative; overflow: hidden;
+}
+.page-container::before { content: '❄️'; position: absolute; top: 10px; left: 10px; font-size: 25px; opacity: 0.5; }
+.page-container::after { content: '🎁'; position: absolute; bottom: 10px; right: 10px; font-size: 25px; opacity: 0.5; }
+
+.top-image-container {
+  width: 100%; border-radius: 15px; margin-bottom: 25px;
+  overflow: hidden; border: 3px solid #c0a062;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); background-color: #000;
+}
+.top-image-container img { width: 100%; height: auto; display: block; object-fit: cover; transition: transform 0.5s ease; }
+
+h2 {
+  font-family: 'Cinzel Decorative', cursive; font-size: 24px; margin-bottom: 20px;
+  color: #ffd700; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px #ff4500;
+  text-align: center; line-height: 1.4;
+}
+
+.progress-container {
+  width: 100%; height: 24px; background-color: #2a0a0a;
+  border-radius: 15px; overflow: hidden; border: 2px solid #c0a062;
+  margin-bottom: 30px; position: relative;
+}
+.progress-bar {
+  height: 100%; width: 0%;
+  background: repeating-linear-gradient(45deg, #b30000, #b30000 10px, #ffffff 10px, #ffffff 20px);
+  background-size: 28px 28px; transition: width 0.5s ease;
+  border-radius: 15px; animation: moveStripe 1s linear infinite; box-shadow: 0 0 10px #ff0000;
+}
+@keyframes moveStripe { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
+
+.step {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(145deg, #660000, #3d0000);
+  border: 2px solid #c0a062; border-radius: 18px; padding: 18px 20px;
+  margin: 15px auto; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none; transform: translateY(15px);
+  transition: all 0.4s ease; font-size: 17px; position: relative; overflow: hidden;
+}
+.step::before {
+  content: ''; position: absolute; top: 0; left: -50%; width: 100%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,215,0,0.2), transparent);
+  transform: skewX(-25deg); transition: 0.7s; pointer-events: none;
+}
+.step a { position: relative; z-index: 2; }
+.step.active:hover::before { left: 100%; }
+.step.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.step.completed {
+  background: linear-gradient(145deg, #0f4d0f, #002900);
+  border-color: #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+.step.completed span { color: #a9ffcb; }
+.step span { text-align: right; font-size: inherit; font-weight: bold; }
+.check { font-size: 24px; color: #ffd700; transition: transform 0.3s ease; }
+.step.completed .check { text-shadow: 0 0 10px #00ff00; }
+
+a { color: #fffaf0; text-decoration: none; display: flex; align-items: center; width: 100%; justify-content: space-between; }
+a:hover { color: #ffd700; }
+
+.loading {
+  display: inline-block; width: 20px; height: 20px;
+  border: 3px solid rgba(255,215,0,0.3); border-top: 3px solid #ffd700;
+  border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.final-section { margin-top: 35px; text-align: center; }
+.final-message { font-size: 19px; margin-bottom: 15px; color: #ff4d4d; font-weight: bold; text-shadow: 0 0 5px #ff0000; }
+.final-buttons {
+  background: rgba(0,0,0,0.3); border-radius: 18px; border: 2px solid #c0a062;
+  padding: 15px; width: 100%; position: relative;
+}
+.final-buttons::before { content: '🎀'; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 30px; }
+.final-buttons a {
+  display: block; background: linear-gradient(to bottom, #555, #333);
+  color: #aaa; padding: 16px; border-radius: 14px; font-size: 18px;
+  font-weight: bold; margin: 10px auto; pointer-events: none; opacity: 0.6;
+  transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  text-align: center; border: 1px solid #444;
+}
+.final-buttons a.active {
+  background: linear-gradient(to bottom, #d40000, #990000);
+  color: #ffd700; pointer-events: auto; opacity: 1; border: 2px solid #ffd700;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4);
+  animation: pulseGift 1.5s infinite;
+}
+@keyframes pulseGift {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+  50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 50, 50, 1), 0 0 50px rgba(255, 215, 0, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+}
+.final-buttons a.btn-guide { background: linear-gradient(to bottom, #006600, #004d00) !important; color: #fff !important; border-color: #00ff00;}
+.final-buttons a.active:hover { transform: scale(1.05) !important; }
+.footer-note { margin-top: 20px; font-size: 12px; color: #c0a062; text-align: center; opacity: 0.7; }
+
+@media (max-width: 600px) {
+  .final-buttons a, .final-buttons a.btn-guide {
+    font-size: 19px !important; padding: 16px 12px !important;
+    display: flex !important; align-items: center; justify-content: center;
+    text-align: center; line-height: 1.2 !important; min-height: 65px;
+    width: 100% !important; border-radius: 15px !important; margin: 15px 0 !important;
+  }
+  .final-buttons { padding: 25px 15px !important; }
+  .step { font-size: 15px; padding: 12px 15px; }
+}
+
+#copyPopup {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(to right, #d40000, #b30000); color: #ffd700;
+  padding: 12px 25px; border-radius: 12px; font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); opacity: 0; pointer-events: none;
+  transition: opacity 0.5s; z-index: 9999; border: 1px solid #ffd700;
+}
+</style>
+</head>
+<body>
+  <div class="snow-container">
+      <div class="snow" style="left: 10%; animation-duration: 5s; animation-delay: 0s;"></div>
+      <div class="snow" style="left: 30%; animation-duration: 7s; animation-delay: 2s; width: 8px; height: 8px;"></div>
+      <div class="snow" style="left: 50%; animation-duration: 4s; animation-delay: 1s;"></div>
+      <div class="snow" style="left: 70%; animation-duration: 6s; animation-delay: 3s; width: 12px; height: 12px;"></div>
+      <div class="snow" style="left: 90%; animation-duration: 5.5s; animation-delay: 0.5s;"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="top-image-container">
+      <img src="https://i.postimg.cc/v8qRm60F/1.jpg" alt="Free Fire Script" id="mainImage" />
+    </div>
+
+    <h2>🎄 نفذ هذه الخطوات أولاً لكي يتم فتح لك روابط التحميل 🎅</h2>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="step1" class="step active">
+      <a href="#" onclick="completeStep(1, 'https://www.youtube.com/@ramymods'); return false;">
+        <span>📺🔔 اضغط هنا وقم بالاشتراك في القناة وتفعيل زر الجرس</span>
+        <span id="check1" class="check">➡️</span>
+      </a>
+    </div>
+
+    <div id="step2" class="step">
+      <a href="#" onclick="completeStep(2); return false;">
+        <span>👍💬 اضغط هنا وقم بعمل لايك وتعليق مميز للفيديو هذا</span>
+        <span id="check2" class="check">➡️</span>
+      </a>
+    </div>
+
+    <div class="final-section">
+      <div id="finalMessage" class="final-message">❌ نفّذ الخطوات أولاً لكي يتم فتح روابط التحميل</div>
+      <div class="final-buttons">
+        <a id="btnDownload" href="https://www.mediafire.com/file/7whoodot54vtssa/%25D9%2587%25D8%25A7%25D9%2583_%25D8%25AF%25D9%2584%25D8%25AA%25D8%25A7_%25D8%25A7%25D9%2584%25D8%25B9%25D9%2585%25D9%258A%25D9%2584_707.rar/file" onclick="goToDownload(); return false;">🎅🎁 لتحميل هاك دلتا العميل 707 (رابط مباشر) اضغط هنا</a>
+      </div>
+      <p class="footer-note">© All Rights Reserved | RAMY MODS</p>
+    </div>
+  </div>
+
+  <div id="copyPopup">تم نسخ الرابط بنجاح! 🎄</div>
+
+  <script>
+    document.getElementById("mainImage").addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+    const STEP_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000;
+    const videoLinks = ["https://youtu.be/F4ps9QiAfjM"];
+    
+    // ✅ هنا التعديل: مفتاح خاص لكل خطوة
+    const step1StateKey = "step1_status";
+    const step2StateKey = "step2_status_552352372662424242423_32635245627427482482";
+
+    function isStateExpired(savedState) { 
+        if(!savedState || !savedState.timestamp) return true; 
+        return Date.now() - savedState.timestamp > STEP_EXPIRY_MS; 
+    }
+
+    window.onload = () => {
+      // قراءة كل خطوة بشكل منفصل
+      const s1 = JSON.parse(localStorage.getItem(step1StateKey) || "{}");
+      const s2 = JSON.parse(localStorage.getItem(step2StateKey) || "{}");
+
+      // التحقق من صلاحية الخطوة 1
+      if(!isStateExpired(s1) && s1.completed){
+          document.getElementById("step1").classList.add("completed");
+          document.getElementById("check1").innerText="✅";
+          // تفعيل الخطوة 2
+          document.getElementById("step2").classList.add("active");
+      } else {
+          localStorage.removeItem(step1StateKey);
+      }
+
+      // التحقق من صلاحية الخطوة 2
+      if(!isStateExpired(s2) && s2.completed){
+          document.getElementById("step2").classList.add("completed");
+          document.getElementById("check2").innerText="✅";
+      } else {
+          localStorage.removeItem(step2StateKey);
+      }
+
+      unlockButtons();
+      updateProgressBar();
+
+      // التمرير لأول خطوة غير مكتملة
+      let firstIncomplete = null;
+      if(!document.getElementById("step1").classList.contains("completed")) firstIncomplete = document.getElementById("step1");
+      else if(!document.getElementById("step2").classList.contains("completed")) firstIncomplete = document.getElementById("step2");
+
+      if(firstIncomplete){ 
+          setTimeout(()=>{ firstIncomplete.scrollIntoView({behavior:"smooth", block:"center"}); }, 600); 
+      }
+    };
+
+    function completeStep(step, url = null) {
+      const check = document.getElementById("check" + step);
+      const stepElement = document.getElementById("step" + step);
+      const alreadyCompleted = stepElement.classList.contains("completed");
+
+      if (step === 2) {
+        const selected = videoLinks[Math.floor(Math.random() * videoLinks.length)];
+        window.open(selected, "_blank");
+      } else if (url) {
+        window.open(url, "_blank");
+      }
+
+      if (alreadyCompleted) return;
+
+      check.innerHTML = '<span class="loading"></span>';
+
+      setTimeout(() => {
+        stepElement.classList.add("completed");
+        check.innerText = "✅";
+        
+        // حفظ كل خطوة في مفتاحها الخاص
+        const data = { completed: true, timestamp: Date.now() };
+        if(step === 1) {
+            localStorage.setItem(step1StateKey, JSON.stringify(data));
+            // فتح الخطوة التالية
+            document.getElementById("step2").classList.add("active");
+            setTimeout(() => {
+                document.getElementById("step2").scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 500);
+        }
+        else if(step === 2) {
+            localStorage.setItem(step2StateKey, JSON.stringify(data));
+        }
+
+        unlockButtons();
+        updateProgressBar();
+
+      }, 10000); // 10 ثواني
+    }
+
+    function unlockButtons(){
+      // التحقق بناءً على الكلاسات الموجودة في الصفحة (لأن التحميل تم بالفعل في البداية)
+      const s1Done = document.getElementById("step1").classList.contains("completed");
+      const s2Done = document.getElementById("step2").classList.contains("completed");
+      
+      if(s1Done && s2Done){
+        document.getElementById("finalMessage").innerText="✅ تم تنفيذ كل الخطوات بنجاح";
+        document.getElementById("finalMessage").style.color="#00ff00";
+        document.getElementById("finalMessage").style.textShadow="0 0 10px #ffd700";
+        document.getElementById("btnDownload").classList.add("active");
+        setTimeout(()=>{ document.getElementById("btnDownload").scrollIntoView({behavior:"smooth", block:"center"}); },800);
+       
+
+
+/* 
+        if(!document.getElementById("btnGuide")){
+          const guideBtn=document.createElement("a");
+          guideBtn.id="btnGuide";
+          guideBtn.href="https://youtu.be/GewzkqWDzlM";
+          guideBtn.target="_blank";
+          guideBtn.className="btn-guide active";
+          guideBtn.innerText="❓ إذا واجهت أي مشكلة في التحميل اضغط هنا";
+          document.querySelector(".final-buttons").appendChild(guideBtn);
+          guideBtn.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+        }
+
+
+*/
+
+
+
+
+      }
+    }
+
+    function updateProgressBar(){
+      let done=0;
+      if(document.getElementById("step1").classList.contains("completed")) done++;
+      if(document.getElementById("step2").classList.contains("completed")) done++;
+      document.getElementById("progressBar").style.width=(done/2)*100+"%";
+    }
+
+    for(let i=1;i<=2;i++){ document.getElementById("step"+i).addEventListener("contextmenu", function(e){ e.preventDefault(); }); }
+    function goToDownload(){ window.open("https://www.mediafire.com/file/7whoodot54vtssa/%25D9%2587%25D8%25A7%25D9%2583_%25D8%25AF%25D9%2584%25D8%25AA%25D8%25A7_%25D8%25A7%25D9%2584%25D8%25B9%25D9%2585%25D9%258A%25D9%2584_707.rar/file","_blank"); }
+
+    const downloadBtn=document.getElementById("btnDownload");
+    const copyPopup=document.getElementById("copyPopup");
+    let pressTimer;
+    function copyLink(){
+      const link=downloadBtn.getAttribute("href");
+      navigator.clipboard.writeText(link).then(()=>{
+        copyPopup.innerText="✅ تم نسخ الرابط: "+link;
+        copyPopup.style.opacity=1;
+        setTimeout(()=>{ copyPopup.style.opacity=0; },2000);
+      }).catch(()=>{
+        copyPopup.innerText="❌ فشل نسخ الرابط، حاول مرة أخرى";
+        copyPopup.style.opacity=1;
+        setTimeout(()=>{ copyPopup.style.opacity=0; },2000);
+      });
+    }
+
+    downloadBtn.addEventListener("contextmenu", function(e){ e.preventDefault(); copyLink(); });
+    downloadBtn.addEventListener("touchstart", function(e){ downloadBtn.style.backgroundColor="#444"; pressTimer=setTimeout(copyLink,1000); });
+    downloadBtn.addEventListener("touchend", function(e){ clearTimeout(pressTimer); downloadBtn.style.backgroundColor=""; });
+    downloadBtn.addEventListener("touchmove", function(e){ clearTimeout(pressTimer); downloadBtn.style.backgroundColor=""; });
+  </script>
+</body>
+</html>
